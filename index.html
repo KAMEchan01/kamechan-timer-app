@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カメちゃんタイマー</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .timer-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .app-title {
+            color: #4a90e2;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .turtle-mascot {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background: url('timer_turtle_mascot.png') center/contain no-repeat;
+            animation: bounce 2s infinite;
+        }
+
+        .turtle-mascot.running {
+            animation: run 0.5s infinite, bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes run {
+            0%, 100% {
+                transform: rotate(-2deg);
+            }
+            50% {
+                transform: rotate(2deg);
+            }
+        }
+
+        .timer-display {
+            font-size: 4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 70px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-start {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .btn-pause {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-pause:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 1s linear;
+        }
+
+        .status-message {
+            margin: 20px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 30px;
+        }
+
+        .status-running {
+            color: #27ae60;
+        }
+
+        .status-paused {
+            color: #f39c12;
+        }
+
+        .status-finished {
+            color: #e74c3c;
+            animation: flash 1s infinite;
+        }
+
+        @keyframes flash {
+            0%, 50% {
+                opacity: 1;
+            }
+            25%, 75% {
+                opacity: 0.5;
+            }
+        }
+
+        .quick-timers {
+            margin: 20px 0;
+        }
+
+        .quick-timers h3 {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .quick-timer-btns {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 8px 16px;
+            background: #ecf0f1;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-btn:hover {
+            background: #bdc3c7;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="timer-container">
+        <h1 class="app-title">🐢 カメちゃんタイマー</h1>
+        <p class="subtitle">集中して頑張ろう！</p>
+        
+        <div class="turtle-mascot" id="turtleMascot"></div>
+        
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="timer-inputs">
+            <div class="input-group">
+                <label>時間</label>
+                <input type="number" id="hours" min="0" max="23" value="0">
+            </div>
+            <div class="input-group">
+                <label>分</label>
+                <input type="number" id="minutes" min="0" max="59" value="25">
+            </div>
+            <div class="input-group">
+                <label>秒</label>
+                <input type="number" id="seconds" min="0" max="59" value="0">
+            </div>
+        </div>
+        
+        <div class="quick-timers">
+            <h3>クイック設定</h3>
+            <div class="quick-timer-btns">
+                <button type="button" class="quick-btn" onclick="setQuickTimer(5, 0)">5分</button>
+                <button type="button" class="quick-btn" onclick="setQuickTimer(10, 0)">10分</button>
+                <button type="button" class="quick-btn" onclick="setQuickTimer(25, 0)">25分</button>
+                <button type="button" class="quick-btn" onclick="setQuickTimer(50, 0)">50分</button>
+                <button type="button" class="quick-btn" onclick="setQuickTimer(0, 30)">30秒</button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button type="button" class="btn btn-start" id="startBtn" onclick="startTimer()">スタート</button>
+            <button type="button" class="btn btn-pause" id="pauseBtn" onclick="pauseTimer()" disabled>一時停止</button>
+            <button type="button" class="btn btn-reset" onclick="resetTimer()">リセット</button>
+        </div>
+        
+        <div class="status-message" id="statusMessage">タイマーを設定してスタートボタンを押してください</div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let totalSeconds = 0;
+        let remainingSeconds = 0;
+        let isRunning = false;
+        let isPaused = false;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const statusMessage = document.getElementById('statusMessage');
+        const turtleMascot = document.getElementById('turtleMascot');
+        const progressFill = document.getElementById('progressFill');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+
+        function updateDisplay() {
+            const hours = Math.floor(remainingSeconds / 3600);
+            const minutes = Math.floor((remainingSeconds % 3600) / 60);
+            const seconds = remainingSeconds % 60;
+            
+            timerDisplay.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // プログレスバーの更新
+            if (totalSeconds > 0) {
+                const progress = ((totalSeconds - remainingSeconds) / totalSeconds) * 100;
+                progressFill.style.width = `${progress}%`;
+            }
+        }
+
+        function setQuickTimer(minutes, seconds) {
+            if (!isRunning) {
+                document.getElementById('hours').value = 0;
+                document.getElementById('minutes').value = minutes;
+                document.getElementById('seconds').value = seconds;
+                resetTimer();
+            }
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                const hours = parseInt(document.getElementById('hours').value) || 0;
+                const minutes = parseInt(document.getElementById('minutes').value) || 0;
+                const seconds = parseInt(document.getElementById('seconds').value) || 0;
+                
+                totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                
+                if (totalSeconds === 0) {
+                    alert('時間を設定してください！');
+                    return;
+                }
+                
+                remainingSeconds = totalSeconds;
+                isRunning = true;
+                isPaused = false;
+                
+                turtleMascot.classList.add('running');
+                statusMessage.textContent = 'カメちゃんと一緒に集中中...';
+                statusMessage.className = 'status-message status-running';
+                
+                startBtn.disabled = true;
+                pauseBtn.disabled = false;
+                
+                timerInterval = setInterval(() => {
+                    remainingSeconds--;
+                    updateDisplay();
+                    
+                    if (remainingSeconds <= 0) {
+                        finishTimer();
+                    }
+                }, 1000);
+                
+                updateDisplay();
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning && !isPaused) {
+                clearInterval(timerInterval);
+                isPaused = true;
+                
+                turtleMascot.classList.remove('running');
+                statusMessage.textContent = '一時停止中...';
+                statusMessage.className = 'status-message status-paused';
+                
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                startBtn.textContent = '再開';
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            isPaused = false;
+            remainingSeconds = 0;
+            totalSeconds = 0;
+            
+            turtleMascot.classList.remove('running');
+            statusMessage.textContent = 'タイマーを設定してスタートボタンを押してください';
+            statusMessage.className = 'status-message';
+            
+            progressFill.style.width = '0%';
+            timerDisplay.textContent = '00:00:00';
+            
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            startBtn.textContent = 'スタート';
+        }
+
+        function finishTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            
+            turtleMascot.classList.remove('running');
+            statusMessage.textContent = '🎉 お疲れさまでした！タイマー終了！';
+            statusMessage.className = 'status-message status-finished';
+            
+            progressFill.style.width = '100%';
+            
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            startBtn.textContent = 'スタート';
+            
+            // アラーム音を再生
+            playAlarmSound();
+            
+            // 完了音声（ブラウザのビープ音）
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance('タイマーが終了しました');
+                utterance.lang = 'ja-JP';
+                utterance.rate = 1.2;
+                speechSynthesis.speak(utterance);
+            }
+            
+            // ブラウザ通知
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    new Notification('カメちゃんタイマー', {
+                        body: 'タイマーが終了しました！お疲れさまでした🐢',
+                        icon: 'timer_turtle_mascot.png'
+                    });
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification('カメちゃんタイマー', {
+                                body: 'タイマーが終了しました！お疲れさまでした🐢',
+                                icon: 'timer_turtle_mascot.png'
+                            });
+                        }
+                    });
+                }
+            }
+        }
+
+        function playAlarmSound() {
+            // Web Audio APIを使用してアラーム音を生成
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // ベル音のような音を生成
+            function playTone(frequency, duration, volume = 0.3) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            }
+            
+            // アラーム音のパターン（3回のベル音）
+            playTone(800, 0.3, 0.4);
+            setTimeout(() => playTone(800, 0.3, 0.4), 300);
+            setTimeout(() => playTone(800, 0.3, 0.4), 600);
+            setTimeout(() => playTone(1000, 0.5, 0.5), 900);
+        }
+
+        // ページ読み込み時に通知許可をリクエスト
+        window.addEventListener('load', () => {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        });
+
+        // 初期表示
+        updateDisplay();
+    </script>
+</body>
+</html>
